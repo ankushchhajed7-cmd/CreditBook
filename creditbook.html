@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#C0102A">
+<title>CreditBook — Udhaar Ledger</title>
+<link rel="manifest" id="manifestLink">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#C0102A; --red-dark:#8E0B1F; --red-soft:#FCE8EB;
+  --yellow:#F5B301; --yellow-soft:#FFF6DC; --yellow-line:#F0D98A;
+  --ink:#1C1B1A; --muted:#7A7570; --bg:#F7F4EF; --card:#FFFFFF;
+  --green:#137a3d; --green-soft:#E6F4EA;
+  --line:#EDE8E0;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+h1,h2,h3,.sora{font-family:'Sora','Inter',sans-serif}
+.app{max-width:640px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:150px}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ---------- Header ---------- */
+.hdr{background:linear-gradient(135deg,var(--red) 0%,var(--red-dark) 100%);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:40}
+.hdr-top{display:flex;align-items:center;gap:11px}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--yellow);color:var(--red-dark);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:22px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.hdr-title{flex:1;min-width:0}
+.hdr-title h1{font-size:17px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-title .sub{font-size:11.5px;color:var(--yellow);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-ico{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0}
+.toolbar{display:flex;gap:6px;margin-top:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.toolbar::-webkit-scrollbar{display:none}
+.tool{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:5px}
+.tool:active{background:rgba(255,255,255,.25)}
+
+/* ---------- Search ---------- */
+.searchbar{padding:12px 16px 4px}
+.search{display:flex;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:0 12px}
+.search input{flex:1;border:none;background:none;outline:none;padding:12px 8px;font-size:15px;font-family:'Inter';color:var(--ink)}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:7px;padding:10px 16px 6px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--line);background:var(--card);font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab.active{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* ---------- Customer list ---------- */
+.list{padding:4px 12px}
+.person{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-bottom:9px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.person:active{background:#FCFAF7}
+.pavatar{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:700;font-size:19px;color:#fff;flex-shrink:0}
+.pinfo{flex:1;min-width:0}
+.pname{font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Sora'}
+.pmeta{font-size:12px;color:var(--muted);margin-top:2px}
+.pmeta .crdr{font-weight:600}
+.pmeta .cr{color:var(--green)}
+.pmeta .dr{color:var(--red)}
+.pdate{font-size:11px;color:var(--muted);margin-top:1px}
+.pright{text-align:right;flex-shrink:0}
+.pbal{font-family:'Sora';font-weight:800;font-size:17px}
+.pbal.get{color:var(--red)}
+.pbal.give{color:var(--green)}
+.pbal.zero{color:var(--muted)}
+.plabel{font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.pactions{display:flex;gap:6px;margin-top:6px;justify-content:flex-end}
+.pa{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer}
+.pa.wa{background:var(--green-soft);color:var(--green)}
+.pa.call{background:var(--red-soft);color:var(--red)}
+
+.empty{text-align:center;padding:56px 24px;color:var(--muted)}
+.empty .ic{font-size:46px;margin-bottom:12px}
+.empty h3{font-family:'Sora';color:var(--ink);font-size:17px;margin-bottom:4px}
+
+/* ---------- Footer totals ---------- */
+.foot{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:640px;background:var(--card);border-top:1px solid var(--line);z-index:45;box-shadow:0 -3px 14px rgba(0,0,0,.06)}
+.foot-tot{display:flex;align-items:center;padding:9px 16px 7px;gap:12px}
+.foot-net{flex:1}
+.foot-net .lbl{font-size:11px;color:var(--muted);font-weight:600}
+.foot-net .val{font-family:'Sora';font-weight:800;font-size:21px}
+.foot-crdr{display:flex;gap:16px;text-align:right}
+.foot-crdr .b{font-size:10.5px;color:var(--muted);font-weight:600}
+.foot-crdr .v{font-family:'Sora';font-weight:700;font-size:14px}
+.foot-crdr .v.cr{color:var(--green)}
+.foot-crdr .v.dr{color:var(--red)}
+.foot-btns{display:flex;gap:10px;padding:0 12px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.fbtn{flex:1;border:none;border-radius:13px;padding:14px;font-family:'Sora';font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.fbtn.mic{flex:0 0 56px;background:var(--yellow-soft);color:var(--red);border:1.5px solid var(--yellow-line);font-size:20px;padding:14px 0}
+.fbtn.mic.on{background:var(--red);color:#fff;animation:pulse 1s infinite}
+.fbtn.add{background:var(--red);color:#fff;box-shadow:0 3px 10px rgba(192,16,42,.28)}
+@keyframes pulse{50%{opacity:.55}}
+
+/* ---------- Detail screen ---------- */
+.screen{position:fixed;inset:0;background:var(--bg);z-index:60;max-width:640px;margin:0 auto;display:none;flex-direction:column;overflow:hidden}
+.screen.show{display:flex}
+.d-hdr{background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff;padding:14px 14px 12px}
+.d-hdr-row{display:flex;align-items:center;gap:11px}
+.d-back{background:rgba(255,255,255,.15);border:none;color:#fff;width:38px;height:38px;border-radius:10px;font-size:20px;cursor:pointer;flex-shrink:0}
+.d-hdr .pavatar{width:42px;height:42px;font-size:17px}
+.d-name-wrap{flex:1;min-width:0}
+.d-name-wrap h2{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-name-wrap .ph{font-size:12px;color:var(--yellow);font-weight:600}
+.d-hdr-acts{display:flex;gap:7px}
+.d-tools{display:flex;gap:6px;margin-top:11px;overflow-x:auto;scrollbar-width:none}
+.d-tools::-webkit-scrollbar{display:none}
+.d-body{flex:1;overflow-y:auto;padding:14px 14px 12px}
+.daygroup{margin-bottom:16px}
+.dayhead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;padding-left:2px}
+.dayhead .dt{font-family:'Sora';font-weight:700;font-size:13.5px;color:var(--ink)}
+.dayhead .passed{font-size:11.5px;color:var(--muted);font-weight:500}
+.txn{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:flex-start;position:relative}
+.txn.give{border-left:4px solid var(--red)}
+.txn.get{border-left:4px solid var(--green)}
+.txn-left{flex:1;min-width:0}
+.txn-amt{font-family:'Sora';font-weight:800;font-size:18px}
+.txn.give .txn-amt{color:var(--red)}
+.txn.get .txn-amt{color:var(--green)}
+.txn-note{font-size:12.5px;color:var(--muted);margin-top:2px}
+.txn-right{text-align:right;flex-shrink:0;padding-left:10px}
+.txn-bal{font-size:12px;font-weight:600;color:var(--ink)}
+.txn-bal .rs{color:var(--muted);font-weight:500}
+.txn-time{font-size:10.5px;color:var(--muted);margin-top:3px}
+.txn-del{position:absolute;right:10px;bottom:8px;font-size:11px;color:var(--red);cursor:pointer;font-weight:600}
+.d-summary{background:var(--card);border-top:1px solid var(--line);display:flex;padding:9px 16px;gap:16px}
+.d-summary .s{flex:1}
+.d-summary .b{font-size:10.5px;color:var(--muted);font-weight:600}
+.d-summary .v{font-family:'Sora';font-weight:700;font-size:15px}
+.d-summary .v.cr{color:var(--green)}.d-summary .v.dr{color:var(--red)}
+.d-btns{display:flex;gap:10px;padding:10px 12px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line)}
+.d-btns .fbtn.get{background:var(--green);color:#fff}
+.d-btns .fbtn.give{background:var(--red);color:#fff}
+
+/* ---------- Sheet / Modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(28,27,26,.5);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:94vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:18px 16px 24px}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sheet-h h2{font-family:'Sora';font-size:19px}
+.sheet-h h2.give{color:var(--red)}.sheet-h h2.get{color:var(--green)}
+.x{background:none;border:none;font-size:26px;color:var(--muted);cursor:pointer;line-height:1}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.irow{display:flex;gap:8px}
+.irow input,.irow select,.field input{width:100%;padding:13px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;font-family:'Inter';background:var(--card);color:var(--ink);outline:none}
+.irow input:focus,.field input:focus{border-color:var(--yellow)}
+.micbtn{flex:0 0 48px;border:1.5px solid var(--line);background:var(--card);border-radius:12px;font-size:19px;cursor:pointer}
+.micbtn.on{background:var(--red);color:#fff;border-color:var(--red);animation:pulse 1s infinite}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:11px;border-radius:11px;border:2px solid var(--line);background:var(--card);font-family:'Sora';font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer}
+.seg button.sel-cust{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.big-btn{width:100%;border:none;border-radius:13px;padding:15px;font-family:'Sora';font-weight:700;font-size:16px;cursor:pointer;margin-top:4px}
+.big-btn.give{background:var(--red);color:#fff}
+.big-btn.get{background:var(--green);color:#fff}
+.big-btn.y{background:var(--yellow);color:var(--red-dark)}
+.line-btn{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:13px;font-weight:600;font-size:14px;cursor:pointer;margin-top:9px;color:var(--ink);font-family:'Inter'}
+.line-btn.danger{color:var(--red);border-color:var(--red-soft);background:var(--red-soft)}
+
+/* ---------- Activation ---------- */
+.setup{max-width:440px;margin:0 auto;padding:28px 20px;min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+.setup-logo{text-align:center;margin-bottom:22px}
+.setup-logo .lg{width:74px;height:74px;border-radius:20px;background:linear-gradient(135deg,var(--red),var(--red-dark));color:var(--yellow);display:inline-flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:38px;box-shadow:0 6px 20px rgba(192,16,42,.3)}
+.setup-logo h1{font-family:'Sora';font-size:26px;margin-top:12px}
+.setup-logo p{color:var(--muted);font-size:13px;margin-top:2px}
+.setup-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.devcode{background:var(--yellow-soft);border:2px dashed var(--yellow-line);border-radius:13px;padding:13px;text-align:center;font-family:'Sora';font-size:26px;font-weight:800;letter-spacing:5px;color:var(--red-dark);margin-bottom:6px}
+
+.toast{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:11px;font-size:14px;font-weight:500;z-index:300;display:none;max-width:86%;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+
+@media(min-width:641px){
+  .app,.screen,.foot{box-shadow:0 0 40px rgba(0,0,0,.08)}
+  body{padding:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ACTIVATION ============ -->
+<div id="setupScreen" class="setup" style="display:none">
+  <div class="setup-logo">
+    <div class="lg">₹</div>
+    <h1>CreditBook</h1>
+    <p>Professional Udhaar Ledger</p>
+  </div>
+  <div class="setup-card">
+    <div class="field"><label>Shop / Business Name</label><input id="setShop" placeholder="e.g. Ankush Kirana"></div>
+    <div class="field"><label>Your WhatsApp Number</label><input id="setPhone" type="tel" placeholder="10-digit mobile"></div>
+    <div class="field"><label>Device Code — send this to get your key</label>
+      <div class="devcode" id="devCode">------</div>
+    </div>
+    <div class="field"><label>Licence Key</label><input id="setKey" type="tel" placeholder="6-digit key"></div>
+    <button class="big-btn give" onclick="activate()">🔓 Activate CreditBook</button>
+  </div>
+</div>
+
+<!-- ============ MAIN ============ -->
+<div id="app" class="app" style="display:none">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="logo">₹</div>
+      <div class="hdr-title">
+        <h1 id="hShop">CreditBook</h1>
+        <div class="sub" id="hEmail">Udhaar Ledger</div>
+      </div>
+      <div class="hdr-ico" onclick="openMenu()">⋯</div>
+    </div>
+    <div class="toolbar">
+      <div class="tool" onclick="toggleLang()">🌐 <span id="langTxt">English</span></div>
+      <div class="tool" onclick="toggleHide()"><span id="hideIco">👁</span> <span id="hideTxt" data-i18n="hideTotal">Hide Total</span></div>
+      <div class="tool" onclick="openReport()">📊 <span data-i18n="report">Report</span></div>
+      <div class="tool" onclick="exportPDF()">📄 <span data-i18n="statement">Statement</span></div>
+      <div class="tool" onclick="bulkRemind()">📢 <span data-i18n="reminders">Reminders</span></div>
+      <div class="tool" onclick="openBackup()">⚙️ <span data-i18n="backup">Backup</span></div>
+    </div>
+  </div>
+
+  <div class="searchbar">
+    <div class="search">🔍<input id="searchBox" placeholder="Search by name or number" oninput="renderList()"></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-t="all" onclick="setTab('all')" data-i18n="all">All</div>
+    <div class="tab" data-t="customer" onclick="setTab('customer')" data-i18n="customers">Customers</div>
+    <div class="tab" data-t="supplier" onclick="setTab('supplier')" data-i18n="suppliers">Suppliers</div>
+    <div class="tab" data-t="other" onclick="setTab('other')" data-i18n="other">Other</div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <div class="foot">
+    <div class="foot-tot">
+      <div class="foot-net">
+        <div class="lbl" data-i18n="netBalance">Net Balance</div>
+        <div class="val num" id="netVal">₹0</div>
+      </div>
+      <div class="foot-crdr">
+        <div><div class="b" data-i18n="youGive">You Give</div><div class="v dr num" id="totGive">₹0</div></div>
+        <div><div class="b" data-i18n="youGet">You Get</div><div class="v cr num" id="totGet">₹0</div></div>
+      </div>
+    </div>
+    <div class="foot-btns">
+      <button class="fbtn mic" id="mic" onclick="smartVoice()">🎤</button>
+      <button class="fbtn add" onclick="openAdd()" data-i18n="addEntry">+ Add Entry / Person</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DETAIL ============ -->
+<div id="detail" class="screen">
+  <div class="d-hdr">
+    <div class="d-hdr-row">
+      <button class="d-back" onclick="closeDetail()">←</button>
+      <div class="pavatar" id="dAvatar">?</div>
+      <div class="d-name-wrap"><h2 id="dName">Name</h2><div class="ph" id="dPhone"></div></div>
+      <div class="d-hdr-acts">
+        <div class="hdr-ico" onclick="callCur()">📞</div>
+        <div class="hdr-ico" onclick="editCur()">✏️</div>
+      </div>
+    </div>
+    <div class="d-tools">
+      <div class="tool" onclick="remindCur()">💬 <span data-i18n="whatsapp">WhatsApp</span></div>
+      <div class="tool" onclick="exportOne()">📄 PDF</div>
+      <div class="tool" onclick="delCur()">🗑 <span data-i18n="delete">Delete</span></div>
+    </div>
+  </div>
+  <div class="d-body" id="dBody"></div>
+  <div class="d-summary">
+    <div class="s"><div class="b" data-i18n="totGetCr">Total You Get (Cr)</div><div class="v cr num" id="dCr">₹0</div></div>
+    <div class="s"><div class="b" data-i18n="totGiveDr">Total You Give (Dr)</div><div class="v dr num" id="dDr">₹0</div></div>
+  </div>
+  <div class="d-btns">
+    <button class="fbtn get" onclick="openEntry('get')" data-i18n="youGotIn">↓ You Got (In)</button>
+    <button class="fbtn give" onclick="openEntry('give')" data-i18n="youGaveOut">↑ You Gave (Out)</button>
+  </div>
+</div>
+
+<!-- ============ ADD PERSON + FIRST ENTRY ============ -->
+<div class="overlay" id="ovAdd">
+  <div class="sheet">
+    <div class="sheet-h"><h2 data-i18n="addEntryPerson">Add Entry / Person</h2><button class="x" onclick="hide('ovAdd')">×</button></div>
+    <div class="field"><label data-i18n="name">Name</label>
+      <div class="irow"><input id="aName" list="names" placeholder="Type or speak name" autocomplete="off"><button class="micbtn" onclick="fv('aName',this)">🎤</button></div>
+      <datalist id="names"></datalist>
+    </div>
+    <div class="field"><label data-i18n="mobile">Mobile Number</label>
+      <div class="irow"><input id="aMobile" type="tel" placeholder="10-digit"><button class="micbtn" onclick="fv('aMobile',this)">🎤</button></div>
+    </div>
+    <div class="field"><label data-i18n="type">Type</label>
+      <div class="seg">
+        <button id="segC" class="sel-cust" onclick="setPtype('customer')" data-i18n="customer">Customer</button>
+        <button id="segS" onclick="setPtype('supplier')" data-i18n="supplier">Supplier</button>
+        <button id="segO" onclick="setPtype('other')" data-i18n="otherType">Other</button>
+      </div>
+    </div>
+    <div class="field"><label data-i18n="amount">Amount ₹</label>
+      <div class="irow"><input id="aAmt" type="number" inputmode="numeric" placeholder="e.g. 500"><button class="micbtn" onclick="fv('aAmt',this)">🎤</button></div>
+    </div>
+    <div class="field"><label data-i18n="note">Note (optional)</label>
+      <div class="irow"><input id="aNote" placeholder="e.g. rice, soap"><button class="micbtn" onclick="fv('aNote',this)">🎤</button></div>
+    </div>
+    <button class="big-btn give" onclick="saveAdd('give')" data-i18n="youGaveCredit">↑ You Gave (Credit given)</button>
+    <button class="big-btn get" style="margin-top:9px" onclick="saveAdd('get')" data-i18n="youGotPay">↓ You Got (Payment received)</button>
+  </div>
+</div>
+
+<!-- ============ ENTRY (from detail) ============ -->
+<div class="overlay" id="ovEntry">
+  <div class="sheet">
+    <div class="sheet-h"><h2 id="eTitle">Entry</h2><button class="x" onclick="hide('ovEntry')">×</button></div>
+    <div class="field"><label>Amount ₹</label>
+      <div class="irow"><input id="eAmt" type="number" inputmode="numeric" placeholder="e.g. 500"><button class="micbtn" onclick="fv('eAmt',this)">🎤</button></div>
+    </div>
+    <div class="field"><label>Note (optional)</label>
+      <div class="irow"><input id="eNote" placeholder="Details"><button class="micbtn" onclick="fv('eNote',this)">🎤</button></div>
+    </div>
+    <button class="big-btn" id="eSave" onclick="saveEntry()">Save</button>
+  </div>
+</div>
+
+<!-- ============ EDIT PERSON ============ -->
+<div class="overlay" id="ovEdit">
+  <div class="sheet">
+    <div class="sheet-h"><h2 data-i18n="editPerson">Edit Person</h2><button class="x" onclick="hide('ovEdit')">×</button></div>
+    <div class="field"><label data-i18n="name">Name</label><input id="edName"></div>
+    <div class="field"><label data-i18n="mobile">Mobile</label><input id="edMobile" type="tel"></div>
+    <div class="field"><label data-i18n="type">Type</label>
+      <div class="seg">
+        <button id="edC" onclick="edType('customer')" data-i18n="customer">Customer</button>
+        <button id="edS" onclick="edType('supplier')" data-i18n="supplier">Supplier</button>
+        <button id="edO" onclick="edType('other')" data-i18n="otherType">Other</button>
+      </div>
+    </div>
+    <button class="big-btn y" onclick="saveEdit()" data-i18n="saveChanges">Save Changes</button>
+  </div>
+</div>
+
+<!-- ============ MENU ============ -->
+<div class="overlay" id="ovMenu">
+  <div class="sheet">
+    <div class="sheet-h"><h2 data-i18n="menu">Menu</h2><button class="x" onclick="hide('ovMenu')">×</button></div>
+    <button class="line-btn" onclick="hide('ovMenu');openReport()" data-i18n="bizReport">📊 Business Report</button>
+    <button class="line-btn" onclick="hide('ovMenu');exportPDF()" data-i18n="fullStmt">📄 Full Statement (PDF)</button>
+    <button class="line-btn" onclick="hide('ovMenu');openBackup()" data-i18n="backupRestore">⚙️ Backup & Restore</button>
+    <button class="line-btn" onclick="hide('ovMenu');bulkRemind()" data-i18n="sendReminders">📢 Send Reminders</button>
+  </div>
+</div>
+
+<!-- ============ REPORT ============ -->
+<div class="overlay" id="ovReport">
+  <div class="sheet">
+    <div class="sheet-h"><h2 data-i18n="businessReport">Business Report</h2><button class="x" onclick="hide('ovReport')">×</button></div>
+    <div id="reportBody"></div>
+  </div>
+</div>
+
+<!-- ============ BACKUP ============ -->
+<div class="overlay" id="ovBackup">
+  <div class="sheet">
+    <div class="sheet-h"><h2 data-i18n="backupRestore">Backup & Restore</h2><button class="x" onclick="hide('ovBackup')">×</button></div>
+    <div class="field"><label data-i18n="shopName">Shop Name</label><input id="bShop"></div>
+    <button class="big-btn y" onclick="saveShop()" data-i18n="saveShopName">Save Shop Name</button>
+    <button class="line-btn" onclick="exportData()" data-i18n="downloadBackup">📤 Download Backup (JSON)</button>
+    <button class="line-btn" onclick="document.getElementById('impFile').click()" data-i18n="restoreBackup">📥 Restore Backup</button>
+    <input type="file" id="impFile" accept=".json" style="display:none" onchange="importData(this)">
+    <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center" data-i18n="backupWeekly">Back up weekly. Your data stays on this device only.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= CreditBook v1.2 — Ankush ================= */
+const LS='creditBook_v1';
+let DB=JSON.parse(localStorage.getItem(LS)||'null')||{activated:false,shop:'',phone:'',people:[],seq:1};
+let curId=null, curTab='all', pType='customer', edPtype='customer', hideTot=false;
+let LANG=localStorage.getItem('cb_lang')||'en';
+
+/* ---------- i18n ---------- */
+const I18N={
+  hideTotal:['Hide Total','टोटल छुपाएं'],showTotal:['Show Total','टोटल दिखाएं'],
+  report:['Report','रिपोर्ट'],statement:['Statement','स्टेटमेंट'],reminders:['Reminders','रिमाइंडर'],backup:['Backup','बैकअप'],
+  all:['All','सभी'],customers:['Customers','ग्राहक'],suppliers:['Suppliers','सप्लायर'],other:['Other','अन्य'],
+  netBalance:['Net Balance','कुल बैलेंस'],youGive:['You Give','आपको देना'],youGet:['You Get','आपको लेना'],
+  addEntry:['+ Add Entry / Person','+ नई एंट्री / व्यक्ति'],addEntryPerson:['Add Entry / Person','नई एंट्री / व्यक्ति'],
+  name:['Name','नाम'],mobile:['Mobile Number','मोबाइल नंबर'],type:['Type','प्रकार'],amount:['Amount ₹','रक़म ₹'],note:['Note (optional)','नोट (वैकल्पिक)'],
+  customer:['Customer','ग्राहक'],supplier:['Supplier','सप्लायर'],otherType:['Other','अन्य'],
+  youGaveCredit:['↑ You Gave (Credit given)','↑ आपने दिया (उधार)'],youGotPay:['↓ You Got (Payment received)','↓ आपको मिला (भुगतान)'],
+  whatsapp:['WhatsApp','व्हाट्सएप'],delete:['Delete','हटाएं'],
+  totGetCr:['Total You Get (Cr)','कुल लेना (Cr)'],totGiveDr:['Total You Give (Dr)','कुल देना (Dr)'],
+  youGotIn:['↓ You Got (In)','↓ आपको मिला'],youGaveOut:['↑ You Gave (Out)','↑ आपने दिया'],
+  search:['Search by name or number','नाम या नंबर से खोजें'],
+  noEntries:['No entries yet','अभी कोई एंट्री नहीं'],noMatches:['No matches','कुछ नहीं मिला'],
+  startLedger:['Tap + Add Entry / Person to start your ledger','+ नई एंट्री दबाकर खाता शुरू करें'],trySearch:['Try another search','दूसरा नाम आज़माएं'],
+  youGetLbl:['You Get','आपको लेना'],youGiveLbl:['You Give','आपको देना'],settled:['Settled','चुकता'],settledMark:['✓ Settled','✓ चुकता'],
+  noTxn:['No transactions','कोई लेन-देन नहीं'],addFirst:['Add first entry below','नीचे पहली एंट्री जोड़ें'],
+  today:['Today','आज'],yesterday:['Yesterday','कल'],daysAgo:['days ago','दिन पहले'],
+  balGet:['You get ','लेना '],balGive:['You give ','देना '],balSettled:['Settled','चुकता'],
+  sendApp:['📤 Send to their app','📤 उनके app में भेजें'],del:['Delete','हटाएं'],
+  noNumber:['No number saved','नंबर नहीं है'],settledAcc:['Account settled','हिसाब चुकता'],
+  entry:['Entry','एंट्री'],save:['Save','सेव करें'],
+  editPerson:['Edit Person','व्यक्ति एडिट करें'],saveChanges:['Save Changes','बदलाव सेव करें'],
+  menu:['Menu','मेन्यू'],bizReport:['📊 Business Report','📊 बिज़नेस रिपोर्ट'],fullStmt:['📄 Full Statement (PDF)','📄 पूरा स्टेटमेंट (PDF)'],
+  backupRestore:['⚙️ Backup & Restore','⚙️ बैकअप और रिस्टोर'],sendReminders:['📢 Send Reminders','📢 रिमाइंडर भेजें'],
+  businessReport:['Business Report','बिज़नेस रिपोर्ट'],totalGet:["Total You'll Get","कुल लेना बाकी"],totalGive:["Total You'll Give","कुल देना बाकी"],
+  custCount:['Customers','ग्राहक'],suppCount:['Suppliers','सप्लायर'],overdue:['Overdue (7+ days)','बकाया (7+ दिन)'],noOverdue:['No overdue accounts 🎉','कोई बकाया नहीं 🎉'],
+  remind:['💬 Remind','💬 याद दिलाएं'],days:['days','दिन'],
+  shopName:['Shop Name','दुकान का नाम'],saveShopName:['Save Shop Name','नाम सेव करें'],
+  downloadBackup:['📤 Download Backup (JSON)','📤 बैकअप डाउनलोड करें'],restoreBackup:['📥 Restore Backup','📥 बैकअप रिस्टोर करें'],
+  backupWeekly:['Back up weekly. Your data stays on this device only.','हर हफ्ते बैकअप लें। डेटा सिर्फ इसी फोन में रहता है।'],
+  activateFirst:['Activate the app first, then reopen the link','पहले app activate करें, फिर link खोलें']
+};
+function t(k){const e=I18N[k];return e?e[LANG==='hi'?1:0]:k}
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
+  const sb=$('searchBox');if(sb)sb.placeholder=t('search');
+  const lt=$('langTxt');if(lt)lt.textContent=LANG==='hi'?'हिंदी':'English';
+  document.documentElement.lang=LANG;
+}
+function toggleLang(){LANG=LANG==='hi'?'en':'hi';localStorage.setItem('cb_lang',LANG);applyLang();renderList();if(curId)openDetail(curId)}
+
+const save=()=>localStorage.setItem(LS,JSON.stringify(DB));
+const $=id=>document.getElementById(id);
+const show=id=>$(id).classList.add('show');
+const hide=id=>$(id).classList.remove('show');
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2400)}
+const fmt=n=>'₹'+Math.abs(Math.round(n)).toLocaleString('en-IN');
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const daysSince=d=>Math.floor((Date.now()-new Date(d).getTime())/864e5);
+const AVCOL=['#C0102A','#137a3d','#8E0B1F','#B45309','#6D28D9','#0369A1','#BE185D','#0F766E'];
+const avColor=id=>AVCOL[id%AVCOL.length];
+
+/* ---------- Licence ---------- */
+function getDevCode(){let c=localStorage.getItem('cb_dev');if(!c){c=String(Math.floor(100000+Math.random()*900000));localStorage.setItem('cb_dev',c)}return c}
+function validKey(code,key){return key===String((parseInt(code)*7+301186)%1000000).padStart(6,'0')}
+function activate(){
+  const shop=$('setShop').value.trim(),ph=$('setPhone').value.replace(/\D/g,'').slice(-10),key=$('setKey').value.trim();
+  if(!shop)return toast('Enter shop name');
+  if(ph.length!==10)return toast('Enter valid 10-digit number');
+  if(!validKey(getDevCode(),key))return toast('❌ Invalid licence key');
+  DB.activated=true;DB.shop=shop;DB.phone=ph;save();boot();toast('🎉 Activated!');
+}
+
+/* ---------- Boot ---------- */
+function boot(){
+  applyLang();
+  if(!DB.activated){$('setupScreen').style.display='flex';$('app').style.display='none';$('devCode').textContent=getDevCode();return}
+  $('setupScreen').style.display='none';$('app').style.display='block';
+  $('hShop').textContent=DB.shop;$('hEmail').textContent=DB.phone?('📱 '+DB.phone):'Udhaar Ledger';
+  applyLang();
+  renderList();
+}
+
+/* ---------- Balance: give(+)=you gave=they owe you=Dr ; get(-)=you got=Cr ---------- */
+/* net > 0  => "You Get" (red, customer owes)
+   net < 0  => "You Give" (green, you owe them) */
+function net(p){return p.txns.reduce((s,t)=>s+(t.dir==='give'?t.amt:-t.amt),0)}
+function crTotal(p){return p.txns.filter(t=>t.dir==='get').reduce((s,t)=>s+t.amt,0)}
+function drTotal(p){return p.txns.filter(t=>t.dir==='give').reduce((s,t)=>s+t.amt,0)}
+function lastDate(p){return p.txns.length?p.txns[p.txns.length-1].ts:0}
+
+/* ---------- Render list ---------- */
+function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.t===t));renderList()}
+function toggleHide(){hideTot=!hideTot;$('hideIco').textContent=hideTot?'🙈':'👁';$('hideTxt').textContent=hideTot?t('showTotal'):t('hideTotal');renderList()}
+
+function renderList(){
+  const q=($('searchBox').value||'').toLowerCase();
+  let arr=DB.people.filter(p=>curTab==='all'||p.type===curTab)
+    .filter(p=>p.name.toLowerCase().includes(q)||p.mobile.includes(q));
+  arr.sort((a,b)=>lastDate(b)-lastDate(a));
+
+  let tGive=0,tGet=0;
+  DB.people.forEach(p=>{const n=net(p);if(n>0)tGive+=n;else if(n<0)tGet+=-n});
+  // tGive = customers owe you (you'll get). tGet = you owe suppliers (you'll give)
+  $('totGet').textContent=hideTot?'••••':fmt(tGive);
+  $('totGive').textContent=hideTot?'••••':fmt(tGet);
+  const netAll=tGive-tGet;
+  $('netVal').textContent=hideTot?'••••':(netAll>=0?fmt(netAll):'-'+fmt(netAll));
+  $('netVal').style.color=netAll>=0?'var(--green)':'var(--red)';
+
+  const list=$('list');
+  if(!arr.length){
+    list.innerHTML=`<div class="empty"><div class="ic">📒</div><h3>${q?t('noMatches'):t('noEntries')}</h3><p>${q?t('trySearch'):t('startLedger')}</p></div>`;
+    return;
+  }
+  list.innerHTML=arr.map(p=>{
+    const n=net(p),cr=crTotal(p),dr=drTotal(p);
+    const cls=n>0?'get':n<0?'give':'zero';
+    const label=n>0?t('youGetLbl'):n<0?t('youGiveLbl'):t('settled');
+    const balTxt=n===0?t('settledMark'):fmt(n);
+    const ld=lastDate(p)?new Date(lastDate(p)):null;
+    const dstr=ld?ld.toLocaleDateString('en-GB')+' · '+ld.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'No entries';
+    return `<div class="person" onclick="openDetail(${p.id})">
+      <div class="pavatar" style="background:${avColor(p.id)}">${(p.name.trim()[0]||'?').toUpperCase()}</div>
+      <div class="pinfo">
+        <div class="pname">${esc(p.name)}</div>
+        <div class="pmeta"><span class="crdr cr num">Cr ${cr.toLocaleString('en-IN')}</span> · <span class="crdr dr num">Dr ${dr.toLocaleString('en-IN')}</span></div>
+        <div class="pdate">${dstr}</div>
+      </div>
+      <div class="pright">
+        <div class="pbal ${cls} num">${balTxt}</div>
+        <div class="plabel">${label}</div>
+        <div class="pactions">
+          <div class="pa wa" onclick="event.stopPropagation();remind(${p.id})">💬</div>
+          <div class="pa call" onclick="event.stopPropagation();call(${p.id})">📞</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ---------- Add person / first entry ---------- */
+function setPtype(t){pType=t;$('segC').className=t==='customer'?'sel-cust':'';$('segS').className=t==='supplier'?'sel-cust':'';$('segO').className=t==='other'?'sel-cust':''}
+function openAdd(){
+  $('aName').value='';$('aMobile').value='';$('aAmt').value='';$('aNote').value='';setPtype('customer');
+  $('names').innerHTML=DB.people.map(p=>`<option value="${esc(p.name)}">`).join('');
+  show('ovAdd');
+}
+function findPerson(name){
+  const n=name.trim().toLowerCase();
+  return DB.people.find(p=>p.name.trim().toLowerCase()===n);
+}
+document.addEventListener('input',e=>{
+  if(e.target.id==='aName'){const p=findPerson(e.target.value);if(p){$('aMobile').value=p.mobile;setPtype(p.type)}}
+});
+function saveAdd(dir){
+  const name=$('aName').value.trim();
+  let mobile=devToAscii($('aMobile').value).replace(/\D/g,'').slice(-10);
+  const amt=parseFloat(devToAscii($('aAmt').value));
+  const note=$('aNote').value.trim();
+  if(!name)return toast('Enter name');
+  if(!amt||amt<=0)return toast('Enter valid amount');
+  let p=findPerson(name);
+  if(!p){
+    if(mobile.length!==10)return toast('New person needs 10-digit mobile');
+    p={id:DB.seq++,name,mobile,type:pType,txns:[]};DB.people.push(p);
+  }else if(mobile.length===10)p.mobile=mobile;
+  p.txns.push({dir,amt,note,date:todayStr(),ts:Date.now()});
+  save();hide('ovAdd');renderList();
+  toast(dir==='give'?`↑ Gave ${fmt(amt)} to ${p.name}`:`↓ Got ${fmt(amt)} from ${p.name}`);
+}
+
+/* ---------- Detail ---------- */
+function openDetail(id){
+  curId=id;const p=DB.people.find(x=>x.id===id);if(!p)return;
+  $('dAvatar').textContent=(p.name.trim()[0]||'?').toUpperCase();
+  $('dAvatar').style.background=avColor(p.id);
+  $('dName').textContent=p.name;
+  const typeLabel=p.type==='customer'?t('customer'):p.type==='supplier'?t('supplier'):t('otherType');
+  $('dPhone').textContent=p.mobile?('📱 '+p.mobile+' · '+typeLabel):typeLabel;
+  $('dCr').textContent=fmt(crTotal(p));$('dDr').textContent=fmt(drTotal(p));
+  renderTxns(p);
+  show('detail');
+}
+function closeDetail(){hide('detail');curId=null;renderList()}
+function renderTxns(p){
+  const body=$('dBody');
+  if(!p.txns.length){body.innerHTML=`<div class="empty"><div class="ic">🧾</div><h3>${t('noTxn')}</h3><p>${t('addFirst')}</p></div>`;return}
+  let run=0;const rows=p.txns.map(t=>{run+=(t.dir==='give'?t.amt:-t.amt);return{...t,bal:run}});
+  const groups={};
+  rows.forEach(r=>{(groups[r.date]=groups[r.date]||[]).push(r)});
+  const dates=Object.keys(groups).sort((a,b)=>new Date(b)-new Date(a));
+  body.innerHTML=dates.map(d=>{
+    const dObj=new Date(d);
+    const dp=daysSince(d);
+    const passed=dp===0?t('today'):dp===1?t('yesterday'):dp+' '+t('daysAgo');
+    const items=groups[d].slice().reverse().map(r=>{
+      const bal=r.bal;
+      const balTxt=(bal>0?t('balGet'):bal<0?t('balGive'):t('balSettled'))+(bal!==0?fmt(bal):'');
+      return `<div class="txn ${r.dir}">
+        <div class="txn-left">
+          <div class="txn-amt num">${r.dir==='give'?'↑ ':'↓ '}${fmt(r.amt)}</div>
+          ${r.note?`<div class="txn-note">${esc(r.note)}</div>`:''}
+        </div>
+        <div class="txn-right">
+          <div class="txn-bal num"><span class="rs">Bal: </span>${balTxt}</div>
+          <div class="txn-time">${new Date(r.ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;justify-content:flex-end;margin:-2px 4px 0">
+        <span style="font-size:11px;color:var(--red);cursor:pointer;font-weight:600" onclick='sendMagicLink(${p.id},${JSON.stringify({dir:r.dir,amt:r.amt,note:r.note||"",ts:r.ts})})'>${t('sendApp')}</span>
+        <span style="font-size:11px;color:var(--muted);cursor:pointer;font-weight:600" onclick="delTxn(${p.id},${r.ts})">${t('del')}</span>
+      </div>`;
+    }).join('');
+    return `<div class="daygroup">
+      <div class="dayhead"><span class="dt">${dObj.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</span><span class="passed">${passed}</span></div>
+      ${items}
+    </div>`;
+  }).join('');
+}
+function delTxn(pid,ts){
+  if(!confirm('Delete this transaction?'))return;
+  const p=DB.people.find(x=>x.id===pid);p.txns=p.txns.filter(t=>t.ts!==ts);save();
+  openDetail(pid);
+}
+
+/* ---------- Entry from detail ---------- */
+let entryDir='give';
+function openEntry(dir){
+  entryDir=dir;
+  $('eTitle').textContent=dir==='give'?t('youGaveOut'):t('youGotIn');
+  $('eTitle').className=dir==='give'?'give':'get';
+  $('eSave').className='big-btn '+dir;
+  $('eSave').textContent=dir==='give'?(LANG==='hi'?'सेव — आपने दिया':'Save — You Gave'):(LANG==='hi'?'सेव — आपको मिला':'Save — You Got');
+  $('eAmt').value='';$('eNote').value='';show('ovEntry');
+}
+function saveEntry(){
+  const amt=parseFloat(devToAscii($('eAmt').value));
+  if(!amt||amt<=0)return toast('Enter valid amount');
+  const p=DB.people.find(x=>x.id===curId);
+  p.txns.push({dir:entryDir,amt,note:$('eNote').value.trim(),date:todayStr(),ts:Date.now()});
+  save();hide('ovEntry');openDetail(curId);
+  toast(entryDir==='give'?`↑ Gave ${fmt(amt)}`:`↓ Got ${fmt(amt)}`);
+}
+
+/* ---------- Edit / delete person ---------- */
+function editCur(){
+  const p=DB.people.find(x=>x.id===curId);
+  $('edName').value=p.name;$('edMobile').value=p.mobile;edType(p.type);show('ovEdit');
+}
+function edType(t){edPtype=t;$('edC').className=t==='customer'?'sel-cust':'';$('edS').className=t==='supplier'?'sel-cust':'';$('edO').className=t==='other'?'sel-cust':''}
+function saveEdit(){
+  const p=DB.people.find(x=>x.id===curId);
+  const nm=$('edName').value.trim();if(!nm)return toast('Enter name');
+  p.name=nm;p.mobile=$('edMobile').value.replace(/\D/g,'').slice(-10);p.type=edPtype;
+  save();hide('ovEdit');openDetail(curId);toast('✓ Updated');
+}
+function delCur(){
+  const p=DB.people.find(x=>x.id===curId);
+  if(!confirm(`Delete ${p.name} and all transactions? Cannot undo.`))return;
+  DB.people=DB.people.filter(x=>x.id!==curId);save();closeDetail();toast('Person deleted');
+}
+function callCur(){const p=DB.people.find(x=>x.id===curId);if(p.mobile)location.href='tel:+91'+p.mobile;else toast('No number')}
+function call(id){const p=DB.people.find(x=>x.id===id);if(p.mobile)location.href='tel:+91'+p.mobile;else toast('No number')}
+
+/* ---------- WhatsApp ---------- */
+/* Build a clear statement: previous balance, total paid, current pending */
+function waMsg(p){
+  const n=net(p);
+  const gave=drTotal(p);   // total you gave out (their debit) 
+  const got=crTotal(p);    // total they paid you
+  const last=p.txns.length?p.txns[p.txns.length-1]:null;
+  const lastLine=last?`\nLast entry: ${last.dir==='give'?'+'+fmt(last.amt):'−'+fmt(last.amt)} on ${new Date(last.date).toLocaleDateString('en-GB')}`:'';
+  const days=last?daysSince(last.date):0;
+
+  if(n>0){ // customer owes you
+    return `*${DB.shop}* — Account Update\n\nDear *${p.name}*,\n\n`+
+      `📋 Total Amount: *${fmt(gave)}*\n`+
+      `✅ Paid: *${fmt(got)}*\n`+
+      `🔴 Pending: *${fmt(n)}*${days?`  (${days} days)`:''}`+
+      `${lastLine}\n\n`+
+      `Kindly clear the pending amount soon. 🙏\nThank you!`;
+  }
+  if(n<0){ // you owe them (supplier)
+    return `*${DB.shop}* — Account Update\n\nDear *${p.name}*,\n\n`+
+      `📋 Total Purchased: *${fmt(got)}*\n`+
+      `✅ Paid by us: *${fmt(gave)}*\n`+
+      `🟢 Payable to you: *${fmt(n)}*`+
+      `${lastLine}\n\n`+
+      `We will settle this soon. 🙏\nThank you!`;
+  }
+  return `*${DB.shop}* — Account Update\n\nDear *${p.name}*,\n\n`+
+    `📋 Total: *${fmt(gave)}*\n✅ Paid: *${fmt(got)}*\n✓ Balance: *Fully Settled*\n\nThank you for your business! 🙏`;
+}
+function remind(id){const p=DB.people.find(x=>x.id===id);if(net(p)===0)return toast('Account settled');window.open(`https://wa.me/91${p.mobile}?text=${encodeURIComponent(waMsg(p))}`,'_blank')}
+function remindCur(){remind(curId)}
+function bulkRemind(){
+  const arr=DB.people.map(p=>({p,n:net(p)})).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+  if(!arr.length)return toast('Nobody owes you right now');
+  toast(`Opening reminders for ${arr.length} people…`);
+  let i=0;const go=()=>{if(i>=arr.length)return;remind(arr[i].p.id);i++;};go();
+  // note: browsers open one tab; user sends then can trigger next from list
+}
+
+/* ---------- Voice ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const NUMW={'zero':0,'0':0,'one':1,'1':1,'two':2,'do':2,'don':2,'2':2,'three':3,'teen':3,'3':3,'four':4,'char':4,'4':4,'five':5,'panch':5,'paanch':5,'paach':5,'5':5,'six':6,'chah':6,'chhah':6,'saha':6,'6':6,'seven':7,'saat':7,'7':7,'eight':8,'aath':8,'8':8,'nine':9,'nau':9,'nou':9,'9':9,'शून्य':0,'एक':1,'दो':2,'दोन':2,'तीन':3,'चार':4,'पांच':5,'पाँच':5,'पाच':5,'छह':6,'सहा':6,'सात':7,'आठ':8,'नौ':9,'नऊ':9};
+function devToAscii(t){return t.replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d))}
+function spokenToDigits(t,phone){
+  t=devToAscii(String(t).toLowerCase()).replace(/[,.\-]/g,' ');
+  const toks=t.split(/\s+/).filter(Boolean);let out='',mult=1;
+  for(let w of toks){
+    if(/^\d+$/.test(w)){out+=w;continue}
+    if(w==='double'||w==='डबल'){mult=2;continue}
+    if(w==='triple'||w==='ट्रिपल'){mult=3;continue}
+    if(!phone&&(w==='hundred'||w==='सौ'||w==='so')){out=out?String(parseInt(out)*100):'100';continue}
+    if(!phone&&(w==='thousand'||w==='हज़ार'||w==='हजार'||w==='hazar')){out=out?String(parseInt(out)*1000):'1000';continue}
+    if(!phone&&(w==='lakh'||w==='लाख')){out=out?String(parseInt(out)*100000):'100000';continue}
+    if(w in NUMW){out+=String(NUMW[w]).repeat(mult);mult=1}
+  }
+  return out;
+}
+function makeRec(){const r=new SR();r.lang='hi-IN';r.interimResults=false;r.maxAlternatives=1;return r}
+function fv(fid,btn){
+  if(!SR)return toast('Voice needs Chrome browser');
+  const isNum=(fid==='aAmt'||fid==='aMobile'||fid==='eAmt'),isPhone=(fid==='aMobile');
+  const r=makeRec();btn.classList.add('on');
+  if(isPhone)toast('🎤 Speak digits: "nau aath saat..."');
+  r.onresult=e=>{
+    let t=e.results[0][0].transcript;
+    if(isNum){
+      t=spokenToDigits(t,isPhone);
+      if(isPhone){t=($(fid).value+t).slice(-10);$(fid).value=t;toast(t.length<10?`${t.length}/10 digits — speak rest 🎤`:'✔ Number ready: '+t);return}
+      if(!t)return toast('Number not clear — try again');
+    }
+    $(fid).value=t;
+    if(fid==='aName'){const p=findPerson(t);if(p){$('aMobile').value=p.mobile;setPtype(p.type);toast('Existing person ✔')}}
+  };
+  r.onend=()=>btn.classList.remove('on');
+  r.onerror=()=>{btn.classList.remove('on');toast('Didn\'t catch that')};
+  r.start();
+}
+function smartVoice(){
+  if(!SR)return toast('Voice needs Chrome');
+  const btn=$('mic');const r=makeRec();btn.classList.add('on');
+  toast('🎤 Say: "Ram ko 500 diya" or "Shyam se 200 liya"');
+  r.onresult=e=>{
+    const t=devToAscii(e.results[0][0].transcript);
+    let amt=(t.match(/\d+/)||[null])[0];if(!amt){const w=spokenToDigits(t,false);if(w&&+w>0)amt=w}
+    const isGot=/(liya|मिला|मिले|got|received|jama|घेतल|se )/i.test(t)&&!/(diya|दिया|दिल|gave)/i.test(t);
+    let namePart=t.replace(/\d+/g,'').replace(/(ko|ne|se|udhaar|udhar|diya|liya|mila|got|gave|received|rupaye|rupees?|₹)/gi,'').trim();
+    openAdd();
+    if(namePart){$('aName').value=namePart;const p=findPerson(namePart);if(p){$('aMobile').value=p.mobile;setPtype(p.type)}}
+    if(amt)$('aAmt').value=amt;
+    toast(isGot?'Detected: You Got — review & save':'Detected: You Gave — review & save');
+  };
+  r.onend=()=>btn.classList.remove('on');
+  r.onerror=()=>{btn.classList.remove('on');toast('Try again')};
+  r.start();
+}
+
+/* ---------- Report ---------- */
+function openReport(){
+  let tGive=0,tGet=0,cust=0,supp=0;
+  DB.people.forEach(p=>{const n=net(p);if(n>0)tGive+=n;else if(n<0)tGet+=-n;if(p.type==='customer')cust++;if(p.type==='supplier')supp++});
+  const overdue=DB.people.map(p=>({p,n:net(p),d:p.txns.length?daysSince(p.txns[p.txns.length-1].date):0})).filter(x=>x.n>0&&x.d>=7).sort((a,b)=>b.d-a.d);
+  $('reportBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px">
+      <div style="background:var(--red-soft);border-radius:12px;padding:13px"><div style="font-size:11px;color:var(--muted);font-weight:600">${t('totalGet')}</div><div class="sora num" style="font-size:20px;font-weight:800;color:var(--red)">${fmt(tGive)}</div></div>
+      <div style="background:var(--green-soft);border-radius:12px;padding:13px"><div style="font-size:11px;color:var(--muted);font-weight:600">${t('totalGive')}</div><div class="sora num" style="font-size:20px;font-weight:800;color:var(--green)">${fmt(tGet)}</div></div>
+      <div style="background:var(--yellow-soft);border-radius:12px;padding:13px"><div style="font-size:11px;color:var(--muted);font-weight:600">${t('custCount')}</div><div class="sora" style="font-size:20px;font-weight:800">${cust}</div></div>
+      <div style="background:#F0F0F5;border-radius:12px;padding:13px"><div style="font-size:11px;color:var(--muted);font-weight:600">${t('suppCount')}</div><div class="sora" style="font-size:20px;font-weight:800">${supp}</div></div>
+    </div>
+    <h3 class="sora" style="font-size:14px;margin-bottom:8px;color:var(--red)">⚠️ ${t('overdue')} — ${overdue.length}</h3>
+    ${overdue.length?overdue.map(({p,n,d})=>`<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:7px"><div><div style="font-weight:700;font-size:14px">${esc(p.name)}</div><div style="font-size:11.5px;color:var(--muted)">${fmt(n)} · ${d} ${t('days')}</div></div><button class="tool" style="background:var(--green);color:#fff" onclick="hide('ovReport');remind(${p.id})">${t('remind')}</button></div>`).join(''):`<p style="color:var(--muted);font-size:13px">${t('noOverdue')}</p>`}
+  `;
+  show('ovReport');
+}
+
+/* ---------- PDF (print) ---------- */
+function exportPDF(){printStatement(null)}
+function exportOne(){printStatement(curId)}
+function printStatement(oneId){
+  const rows=[];
+  const people=oneId?DB.people.filter(p=>p.id===oneId):DB.people;
+  people.forEach(p=>{
+    let run=0;
+    p.txns.forEach(t=>{run+=(t.dir==='give'?t.amt:-t.amt);rows.push({name:p.name,date:t.date,dir:t.dir,amt:t.amt,note:t.note||'',bal:run})});
+  });
+  const win=window.open('','_blank');
+  if(!win)return toast('Allow pop-ups to export PDF');
+  const title=oneId?esc(DB.people.find(p=>p.id===oneId).name):'All Accounts';
+  win.document.write(`<html><head><title>${DB.shop} — Statement</title><style>
+    body{font-family:Arial,sans-serif;padding:24px;color:#1C1B1A}
+    h1{color:#C0102A;margin:0 0 2px}.sub{color:#777;font-size:13px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{background:#C0102A;color:#fff;padding:8px;text-align:left}
+    td{padding:7px 8px;border-bottom:1px solid #eee}
+    .give{color:#C0102A}.get{color:#137a3d}.r{text-align:right}
+    .foot{margin-top:16px;font-size:13px;font-weight:bold}
+  </style></head><body>
+    <h1>${esc(DB.shop)}</h1><div class="sub">Statement — ${title} · ${new Date().toLocaleDateString('en-GB')}</div>
+    <table><thead><tr><th>Name</th><th>Date</th><th>Detail</th><th class="r">You Gave</th><th class="r">You Got</th><th class="r">Balance</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${new Date(r.date).toLocaleDateString('en-GB')}</td><td>${esc(r.note)}</td><td class="r give">${r.dir==='give'?'₹'+r.amt.toLocaleString('en-IN'):''}</td><td class="r get">${r.dir==='get'?'₹'+r.amt.toLocaleString('en-IN'):''}</td><td class="r">${r.bal>0?'You get ':'You give '}₹${Math.abs(r.bal).toLocaleString('en-IN')}</td></tr>`).join('')}
+    </tbody></table>
+    <p class="foot">Generated by CreditBook · ${DB.shop}</p>
+    <script>setTimeout(()=>window.print(),400)<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+/* ---------- Backup ---------- */
+function openMenu(){show('ovMenu')}
+function openBackup(){$('bShop').value=DB.shop;show('ovBackup')}
+function saveShop(){const s=$('bShop').value.trim();if(!s)return toast('Enter name');DB.shop=s;save();$('hShop').textContent=s;toast('✓ Saved')}
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`creditbook-backup-${todayStr()}.json`;a.click();toast('📤 Backup downloaded')
+}
+function importData(inp){
+  const f=inp.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d.people)throw 0;d.activated=true;DB=d;save();boot();hide('ovBackup');toast('📥 Restored')}catch(e){toast('❌ Invalid backup file')}};
+  rd.readAsText(f);inp.value='';
+}
+
+/* ---------- PWA manifest ---------- */
+(function(){
+  const icon='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#C0102A"/><text x="50" y="70" font-size="60" font-family="Arial" font-weight="bold" fill="#F5B301" text-anchor="middle">₹</text></svg>');
+  const man={name:'CreditBook',short_name:'CreditBook',start_url:'.',display:'standalone',background_color:'#F7F4EF',theme_color:'#C0102A',icons:[{src:icon,sizes:'any',type:'image/svg+xml'}]};
+  $('manifestLink').href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(man));
+})();
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+
+/* ---------- Magic Link: auto-add entry from ?add=... ---------- */
+/* Sender builds link when THEY gave/got; receiver's side is flipped:
+   sender 'give' (A gave B) => receiver 'get' (B got from A). Person = sender's shop/name. */
+function handleMagicLink(){
+  const qs=new URLSearchParams(location.search);
+  const raw=qs.get('add');
+  if(!raw)return false;
+  // format: name | mobile | amount | dir(give/get from receiver's view) | note | linkId
+  let parts;
+  try{parts=decodeURIComponent(raw).split('|')}catch(e){parts=raw.split('|')}
+  const [name,mobile,amtS,dir,note,linkId]=parts;
+  const amt=parseFloat(amtS);
+  if(!name||!amt||!(dir==='give'||dir==='get')){cleanURL();return false}
+  if(!DB.activated){cleanURL();toast('Activate the app first, then reopen the link');return true}
+  // duplicate guard
+  DB._used=DB._used||[];
+  const key=linkId||(name+'|'+amt+'|'+dir+'|'+(note||''));
+  if(DB._used.includes(key)){cleanURL();toast('This entry was already added ✔');boot();return true}
+
+  const mob=(mobile||'').replace(/\D/g,'').slice(-10);
+  let p=DB.people.find(x=>x.name.trim().toLowerCase()===name.trim().toLowerCase());
+  if(!p){p={id:DB.seq++,name:name.trim(),mobile:mob,type:'other',txns:[]};DB.people.push(p)}
+  else if(mob.length===10&&!p.mobile)p.mobile=mob;
+  p.txns.push({dir,amt,note:(note||'').trim()||'Via CreditBook link',date:todayStr(),ts:Date.now()});
+  DB._used.push(key);
+  save();cleanURL();boot();
+  setTimeout(()=>{
+    openDetail(p.id);
+    toast(dir==='get'?`✔ Auto-saved: You Got ${fmt(amt)} from ${p.name}`:`✔ Auto-saved: You Gave ${fmt(amt)} to ${p.name}`);
+  },200);
+  return true;
+}
+function cleanURL(){history.replaceState({},'',location.pathname)}
+
+/* ---------- Build & send a magic link from a transaction ---------- */
+function sendMagicLink(pid,txn){
+  const p=DB.people.find(x=>x.id===pid);
+  // Flip direction for receiver: if I gave (give), they got (get); if I got, they gave.
+  const rxDir=txn.dir==='give'?'get':'give';
+  const myName=DB.shop||'A shop';
+  const myMobile=DB.phone||'';
+  const linkId='cb'+Date.now();
+  const base=location.origin+location.pathname;
+  const payload=[myName,myMobile,txn.amt,rxDir,txn.note||'',linkId].join('|');
+  const link=base+'?add='+encodeURIComponent(payload);
+  const msg=`*${myName}* — CreditBook entry\n\n`+
+    (txn.dir==='give'
+      ? `You received *${fmt(txn.amt)}* from us${txn.note?` (${txn.note})`:''}.`
+      : `We received *${fmt(txn.amt)}* from you${txn.note?` (${txn.note})`:''}.`)+
+    `\n\n👉 Tap to auto-add in your CreditBook:\n${link}\n\n(No typing needed — it saves automatically.)`;
+  if(p&&p.mobile)window.open(`https://wa.me/91${p.mobile}?text=${encodeURIComponent(msg)}`,'_blank');
+  else window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+if(!handleMagicLink())boot();
+</script>
+</body>
+</html>
